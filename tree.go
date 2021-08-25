@@ -3,18 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
-	"strings"
+	"path/filepath"
 
-	"github.com/disiqueira/gotree"
+	"github.com/ruscalworld/nbt-cli/gotree"
 	"github.com/urfave/cli/v2"
-)
-
-const (
-	newLine      = "\n"
-	emptySpace   = "    "
-	middleItem   = "├── "
-	continueItem = "│   "
-	lastItem     = "└── "
 )
 
 func PrintTree(_ *cli.Context) error {
@@ -23,70 +15,31 @@ func PrintTree(_ *cli.Context) error {
 		return nil
 	}
 
-	root := gotree.New(InputFilePath)
+	root := gotree.New(fmt.Sprintf("• %s", filepath.Base(InputFilePath)))
 	processNode(&root, CurrentData)
-	log.Println(printTree(root))
+	root.SortItems()
+	fmt.Println(root.Print())
 	return nil
 }
 
 func processNode(parent *gotree.Tree, data map[string]interface{}) {
 	for key, value := range data {
 		if mapValue, ok := value.(map[string]interface{}); ok {
-			child := (*parent).Add(key)
-			processNode(&child, mapValue)
+			processMap(parent, key, mapValue)
+		} else if listValue, ok := value.([]interface{}); ok {
+			processMap(parent, key, ArrayToMap(listValue))
+		} else if intArrayValue, ok := value.([]int32); ok {
+			processMap(parent, key, IntArrayToMap(intArrayValue))
+		} else if longArrayValue, ok := value.([]int64); ok {
+			processMap(parent, key, LongArrayToMap(longArrayValue))
 		} else {
-			(*parent).Add(fmt.Sprintf("%s: %s", key, value))
+			(*parent).Add(fmt.Sprintf("%s: %s", key, ToString(value)))
 		}
 	}
 }
 
-func printTree(tree gotree.Tree) string {
-	return tree.Text() + newLine + printItems(tree.Items(), []bool{})
-}
-
-func printItems(tree []gotree.Tree, spaces []bool) string {
-	var result string
-	for i, f := range tree {
-		last := i == len(tree)-1
-		result += printText(f.Text(), spaces, last)
-		if len(f.Items()) > 0 {
-			spacesChild := append(spaces, last)
-			result += printItems(f.Items(), spacesChild)
-		}
-	}
-	return result
-}
-
-func printText(text string, spaces []bool, last bool) string {
-	var result string
-	for _, space := range spaces {
-		if space {
-			result += emptySpace
-		} else {
-			result += continueItem
-		}
-	}
-
-	indicator := middleItem
-	if last {
-		indicator = lastItem
-	}
-
-	var out string
-	lines := strings.Split(text, "\n")
-	for i := range lines {
-		text := lines[i]
-		if i == 0 {
-			out += result + indicator + text + newLine
-			continue
-		}
-		if last {
-			indicator = emptySpace
-		} else {
-			indicator = continueItem
-		}
-		out += result + indicator + text + newLine
-	}
-
-	return out
+func processMap(parent *gotree.Tree, key string, data map[string]interface{}) {
+	child := (*parent).Add(key)
+	processNode(&child, data)
+	child.SortItems()
 }
