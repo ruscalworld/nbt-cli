@@ -3,16 +3,18 @@ package main
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/gookit/color"
 )
 
 func ToString(value interface{}) string {
 	switch value.(type) {
 	case float32, float64:
-		return fmt.Sprintf("%f", value)
+		return color.Yellow.Text(fmt.Sprintf("%f", value))
 	case uint8, int16, int32, int64:
-		return fmt.Sprintf("%d", value)
+		return color.Blue.Text(fmt.Sprintf("%d", value))
 	default:
-		return fmt.Sprintf("%s", value)
+		return color.Green.Text(fmt.Sprintf("\"%s\"", value))
 	}
 }
 
