@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"log"
 	"path/filepath"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/gookit/color"
 	"github.com/ruscalworld/nbt-cli/gotree"
 	"github.com/urfave/cli/v2"
 )
@@ -26,10 +27,11 @@ func PrintTree(_ *cli.Context) error {
 
 func processNode(parent *gotree.Tree, data map[string]interface{}) {
 	for key, value := range data {
+		typeText := color.FgLightYellow.Text(fmt.Sprintf("(%s)", GetTypeName(value)))
 		if mapValue, ok := value.(map[string]interface{}); ok {
-			processMap(parent, key, "", mapValue)
+			processMap(parent, key+" "+typeText, "", mapValue)
 		} else if listValue, ok := value.([]interface{}); ok {
-			processMap(parent, key, "", ArrayToMap(listValue))
+			processMap(parent, key+" "+typeText, "", ArrayToMap(listValue))
 		} else if intArrayValue, ok := value.([]int32); ok {
 			comment := ""
 
@@ -46,9 +48,9 @@ func processNode(parent *gotree.Tree, data map[string]interface{}) {
 				}
 			}
 
-			processMap(parent, key, comment, IntArrayToMap(intArrayValue))
+			processMap(parent, key+" "+typeText, comment, IntArrayToMap(intArrayValue))
 		} else if longArrayValue, ok := value.([]int64); ok {
-			processMap(parent, key, "", LongArrayToMap(longArrayValue))
+			processMap(parent, key+" "+typeText, "", LongArrayToMap(longArrayValue))
 		} else if tip, ok := value.(Tip); ok {
 			(*parent).Add(tip.Text)
 		} else {
@@ -60,13 +62,22 @@ func processNode(parent *gotree.Tree, data map[string]interface{}) {
 				}
 			}
 
-			(*parent).Add(fmt.Sprintf("%s: %s %s", key, ToString(value), comment))
+			(*parent).Add(fmt.Sprintf("%s: %s %s %s",
+				color.FgLightWhite.Text(key),
+				ToString(value),
+				typeText,
+				comment,
+			))
 		}
 	}
 }
 
 func processMap(parent *gotree.Tree, key, description string, data map[string]interface{}) {
-	child := (*parent).Add(fmt.Sprintf("%s %s", key, description))
+	child := (*parent).Add(fmt.Sprintf("%s %s",
+		color.LightWhite.Text(key),
+		description,
+	))
+
 	processNode(&child, data)
 	child.SortItems()
 }
