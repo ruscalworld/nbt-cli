@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"log"
 	"path/filepath"
+	"time"
 
 	"github.com/ruscalworld/nbt-cli/gotree"
 	"github.com/urfave/cli/v2"
@@ -51,7 +52,15 @@ func processNode(parent *gotree.Tree, data map[string]interface{}) {
 		} else if tip, ok := value.(Tip); ok {
 			(*parent).Add(tip.Text)
 		} else {
-			(*parent).Add(fmt.Sprintf("%s: %s", key, ToString(value)))
+			comment := ""
+			if long, ok := value.(int64); ok {
+				if long > 1000000000000 {
+					t := time.Unix(long/1000, 0)
+					comment = Comment(fmt.Sprintf("Time: %s", t))
+				}
+			}
+
+			(*parent).Add(fmt.Sprintf("%s: %s %s", key, ToString(value), comment))
 		}
 	}
 }
