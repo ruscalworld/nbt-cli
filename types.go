@@ -17,6 +17,12 @@ func ToString(value interface{}) string {
 }
 
 func ArrayToMap(array []interface{}) map[string]interface{} {
+	if len(array) > ArrayItemLimit {
+		omitted := len(array) - ArrayItemLimit
+		array = array[:ArrayItemLimit]
+		array = append(array, Tip{fmt.Sprintf("... and %d more items", omitted)})
+	}
+
 	result := make(map[string]interface{})
 	for i, v := range array {
 		result[strconv.Itoa(i)] = v

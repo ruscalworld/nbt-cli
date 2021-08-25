@@ -1,6 +1,7 @@
 package gotree
 
 import (
+	"math"
 	"regexp"
 	"sort"
 	"strconv"
@@ -93,6 +94,11 @@ func (t *tree) Rank() int {
 		}
 		return r
 	}
+
+	if strings.HasPrefix(t.Text(), "...") {
+		return math.MaxInt32
+	}
+
 	return -1
 }
 

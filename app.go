@@ -10,6 +10,7 @@ import (
 var (
 	InputFilePath  = ""
 	OutputFilePath = ""
+	ArrayItemLimit = 50
 )
 
 func main() {
@@ -34,6 +35,12 @@ func main() {
 				Aliases:     []string{"o"},
 				Value:       InputFilePath,
 				Destination: &OutputFilePath,
+			},
+			&cli.IntFlag{
+				Name:        "limit",
+				Aliases:     []string{"l"},
+				Value:       50,
+				Destination: &ArrayItemLimit,
 			},
 		},
 	}

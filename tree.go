@@ -9,6 +9,10 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+type Tip struct {
+	Text string
+}
+
 func PrintTree(_ *cli.Context) error {
 	if len(CurrentData) == 0 {
 		log.Println("This file does not contain any data.")
@@ -32,6 +36,8 @@ func processNode(parent *gotree.Tree, data map[string]interface{}) {
 			processMap(parent, key, IntArrayToMap(intArrayValue))
 		} else if longArrayValue, ok := value.([]int64); ok {
 			processMap(parent, key, LongArrayToMap(longArrayValue))
+		} else if tip, ok := value.(Tip); ok {
+			(*parent).Add(tip.Text)
 		} else {
 			(*parent).Add(fmt.Sprintf("%s: %s", key, ToString(value)))
 		}
