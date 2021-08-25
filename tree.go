@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Tnze/go-mc/chat"
 	"log"
 	"path/filepath"
 	"time"
@@ -59,6 +60,14 @@ func processNode(parent *gotree.Tree, data map[string]interface{}) {
 				if long > 1000000000000 {
 					t := time.Unix(long/1000, 0)
 					comment = Comment(fmt.Sprintf("Time: %s", t))
+				}
+			}
+
+			if str, ok := value.(string); ok {
+				message := chat.Message{}
+				err := message.UnmarshalJSON([]byte(str))
+				if err == nil {
+					comment = Comment(fmt.Sprintf("Message component: '%s'", message.String()))
 				}
 			}
 
