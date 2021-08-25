@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/gookit/color"
 )
@@ -13,8 +14,14 @@ func ToString(value interface{}) string {
 		return color.Blue.Text(fmt.Sprintf("%f", value))
 	case uint8, int16, int32, int64:
 		return color.Cyan.Text(fmt.Sprintf("%d", value))
+	case string:
+		if str, ok := value.(string); ok && !strings.Contains(str, "\"") {
+			return color.Green.Text(fmt.Sprintf("\"%s\"", str))
+		} else {
+			return color.LightGreen.Text(fmt.Sprintf("'%s'", str))
+		}
 	default:
-		return color.Green.Text(fmt.Sprintf("\"%s\"", value))
+		return color.LightRed.Text(fmt.Sprintf("%s", value))
 	}
 }
 
