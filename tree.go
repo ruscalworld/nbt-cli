@@ -2,16 +2,13 @@ package main
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"log"
 	"path/filepath"
 
 	"github.com/ruscalworld/nbt-cli/gotree"
 	"github.com/urfave/cli/v2"
 )
-
-type Tip struct {
-	Text string
-}
 
 func PrintTree(_ *cli.Context) error {
 	if len(CurrentData) == 0 {
@@ -29,13 +26,28 @@ func PrintTree(_ *cli.Context) error {
 func processNode(parent *gotree.Tree, data map[string]interface{}) {
 	for key, value := range data {
 		if mapValue, ok := value.(map[string]interface{}); ok {
-			processMap(parent, key, mapValue)
+			processMap(parent, key, "", mapValue)
 		} else if listValue, ok := value.([]interface{}); ok {
-			processMap(parent, key, ArrayToMap(listValue))
+			processMap(parent, key, "", ArrayToMap(listValue))
 		} else if intArrayValue, ok := value.([]int32); ok {
-			processMap(parent, key, IntArrayToMap(intArrayValue))
+			comment := ""
+
+			if len(intArrayValue) == 4 {
+				parsedUUID, err := uuid.FromBytes([]byte{
+					byte(intArrayValue[0] >> 24), byte(intArrayValue[0] >> 16), byte(intArrayValue[0] >> 8), byte(intArrayValue[0]),
+					byte(intArrayValue[1] >> 24), byte(intArrayValue[1] >> 16), byte(intArrayValue[1] >> 8), byte(intArrayValue[1]),
+					byte(intArrayValue[2] >> 24), byte(intArrayValue[2] >> 16), byte(intArrayValue[2] >> 8), byte(intArrayValue[2]),
+					byte(intArrayValue[3] >> 24), byte(intArrayValue[3] >> 16), byte(intArrayValue[3] >> 8), byte(intArrayValue[3]),
+				})
+
+				if err == nil {
+					comment = Comment(fmt.Sprintf("UUID: %s", parsedUUID.String()))
+				}
+			}
+
+			processMap(parent, key, comment, IntArrayToMap(intArrayValue))
 		} else if longArrayValue, ok := value.([]int64); ok {
-			processMap(parent, key, LongArrayToMap(longArrayValue))
+			processMap(parent, key, "", LongArrayToMap(longArrayValue))
 		} else if tip, ok := value.(Tip); ok {
 			(*parent).Add(tip.Text)
 		} else {
@@ -44,8 +56,8 @@ func processNode(parent *gotree.Tree, data map[string]interface{}) {
 	}
 }
 
-func processMap(parent *gotree.Tree, key string, data map[string]interface{}) {
-	child := (*parent).Add(key)
+func processMap(parent *gotree.Tree, key, description string, data map[string]interface{}) {
+	child := (*parent).Add(fmt.Sprintf("%s %s", key, description))
 	processNode(&child, data)
 	child.SortItems()
 }
