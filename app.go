@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/urfave/cli/v2"
@@ -22,6 +21,22 @@ func main() {
 				Name:   "tree",
 				Action: FileAction(PrintTree),
 			},
+			{
+				Name:   "set",
+				Action: FileAction(SetValue),
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:     "key",
+						Aliases:  []string{"k"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     "value",
+						Aliases:  []string{"v"},
+						Required: true,
+					},
+				},
+			},
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -33,7 +48,6 @@ func main() {
 			&cli.StringFlag{
 				Name:        "output",
 				Aliases:     []string{"o"},
-				Value:       InputFilePath,
 				Destination: &OutputFilePath,
 			},
 			&cli.IntFlag{
@@ -47,7 +61,7 @@ func main() {
 
 	err := app.Run(os.Args)
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 		return
 	}
 }

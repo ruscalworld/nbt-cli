@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"compress/gzip"
 	"io/ioutil"
 	"os"
@@ -17,6 +18,8 @@ func LoadData() error {
 		return err
 	}
 
+	defer file.Close()
+
 	reader, err := gzip.NewReader(file)
 	if err != nil {
 		return err
@@ -32,6 +35,10 @@ func LoadData() error {
 
 func FileAction(actionFunc cli.ActionFunc) cli.ActionFunc {
 	return func(context *cli.Context) error {
+		if OutputFilePath == "" {
+			OutputFilePath = InputFilePath
+		}
+
 		err := LoadData()
 		if err != nil {
 			return err
@@ -39,4 +46,30 @@ func FileAction(actionFunc cli.ActionFunc) cli.ActionFunc {
 
 		return actionFunc(context)
 	}
+}
+
+func SaveData() error {
+	data, err := nbt.Marshal(CurrentData)
+	if err != nil {
+		return err
+	}
+
+	var buffer bytes.Buffer
+	writer := gzip.NewWriter(&buffer)
+	_, err = writer.Write(data)
+	if err != nil {
+		return err
+	}
+
+	err = writer.Flush()
+	if err != nil {
+		return err
+	}
+
+	err = writer.Close()
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(OutputFilePath, buffer.Bytes(), 0644)
 }

@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/Tnze/go-mc/chat"
 	"log"
 	"path/filepath"
 	"time"
 
+	"github.com/Tnze/go-mc/chat"
 	"github.com/google/uuid"
 	"github.com/gookit/color"
 	"github.com/ruscalworld/nbt-cli/gotree"
