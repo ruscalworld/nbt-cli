@@ -27,6 +27,9 @@ func walk(data map[string]interface{}, path []string) (map[string]interface{}, e
 		value := data[path[0]]
 		if mapValue, ok := value.(map[string]interface{}); ok {
 			return walk(mapValue, path[1:])
+		} else if value == nil {
+			data[path[0]] = make(map[string]interface{})
+			return walk(data, path)
 		} else {
 			return nil, errors.New(fmt.Sprintf("%s was a %s, but map was expected", path[0], reflect.TypeOf(value)))
 		}
